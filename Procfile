@@ -1,1 +1,1 @@
-web: fabio1236791 app:app
+web: gunicorn app
