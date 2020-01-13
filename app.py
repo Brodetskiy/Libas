@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from flask import Flask, render_template, url_for, request, redirect
+from flask import Flask, render_template, url_for, request, redirect, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 
@@ -11,16 +11,27 @@ class Todo(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     content = db.Column(db.String(200), nullable = False)
     date_created = db.Column(db.DateTime, default= datetime.utcnow)
-    comment = db.Column(db.String(200), nullable = False)
+    comment = db.Column(db.String(200), nullable = True)
 
     def __repr__(self):
         return '<Task %r>' % self.id
+
+def get_the_record(record):
+    return {"id": record.id, "content":record.content, "comment": record.comment}
+
+@app.route('/api/get_records', methods = ["GET"])
+def record():
+    return jsonify({"records": list(map(get_the_record, Todo.query.all()))})
+
+@app.route('/api/', methods = ["GET"])
+def value():
+    return "This is fifth lab!"
 
 @app.route('/', methods = ['POST', 'GET'])
 def index():
     if request.method == 'POST':
         task_content = request.form['content']
-        new_task = Todo(content = task_content, comment = 'None')
+        new_task = Todo(content = task_content, comment = '')
         try:
             db.session.add(new_task)
             db.session.commit()
@@ -69,6 +80,6 @@ def comment(id):
             return "You have major problem with commenting your task"
     else:
         return render_template('comment.html', task = task)
-
 if __name__ == "__main__":
     app.run(debug=True)
+    
