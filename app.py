@@ -16,10 +16,33 @@ class Todo(db.Model):
     def __repr__(self):
         return '<Task %r>' % self.id
 
+@app.route('/api/post', methods = ["POST"])
+def create_record():
+    record = Todo(request.json['content'], request.json['date_created'], request.json['comment'])
+    db.session.add(record)
+    db.session.commit()
+    return jsonify({"records": record_to_dict(record)})
+
+@app.route('/api/put/<int:id>', methods = ['PUT'])
+def update_record(id):
+    record = Todo.query.filter_by(id = id).first()
+    record['content'] = request.json['content']
+    record['comment'] = request.json['comment']
+    db.session.commit()
+    return jsonify({"record": record_to_dict(record)})
+
+@app.route('/api/delete/<int:id>', methods = ["DELETE"])
+def delete_record(id):
+    record = Todo.query.filter_by(id = id).first()
+    if record:
+        db.session.delete(record)
+        db.session.commit()
+        return jsonify({"result": True})
+    else:
+        return make_response(jsonify({"error": "Not found"}, 404))
+
 def get_the_record(record):
-    return {"id": record.id, "content":record.content, "comment": record.comment}
-
-
+    return {"id": record.id, "time":record.date_created, "content":record.content, "comment": record.comment}
 
 @app.route('/api/get_records', methods = ["GET"])
 def record():
@@ -44,7 +67,6 @@ def index():
         tasks = Todo.query.order_by(Todo.date_created).all()
         return render_template('index.html', tasks = tasks)
 
-
 @app.route('/delete/<int:id>')
 def delete(id):
     task_to_delete = Todo.query.get_or_404(id)
@@ -54,8 +76,6 @@ def delete(id):
         return redirect('/')
     except:
         return "We have mutual problem with deleting the task"
-
-
 
 @app.route('/update/<int:id>', methods = ['GET', 'POST'])
 def update(id):
