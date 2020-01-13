@@ -19,13 +19,15 @@ class Todo(db.Model):
 def get_the_record(record):
     return {"id": record.id, "content":record.content, "comment": record.comment}
 
+
+
 @app.route('/api/get_records', methods = ["GET"])
 def record():
     return jsonify({"records": list(map(get_the_record, Todo.query.all()))})
 
 @app.route('/api/', methods = ["GET"])
 def value():
-    return "This is fifth lab!"
+    return "Hello world!"
 
 @app.route('/', methods = ['POST', 'GET'])
 def index():
