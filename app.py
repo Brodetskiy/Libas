@@ -16,18 +16,19 @@ class Todo(db.Model):
     def __repr__(self):
         return '<Task %r>' % self.id
 
-@app.route('/api/post', methods = ["POST"])
+@app.route('/post', methods = ["POST"])
 def create_record():
-    record = Todo(request.json['content'], request.json['date_created'], request.json['comment'])
-    db.session.add(record)
+    task_content = request.form['content']
+    new_task = Todo(content = task_content, comment = '')
+    db.session.add(new_task)
     db.session.commit()
-    return jsonify({"records": record_to_dict(record)})
+    return jsonify({"records": record_to_dict(new_task)})
 
 @app.route('/api/put/<int:id>', methods = ['PUT'])
 def update_record(id):
     record = Todo.query.filter_by(id = id).first()
-    record['content'] = request.json['content']
-    record['comment'] = request.json['comment']
+    record['content'] = 'updated'
+    record['comment'] = 'from here'
     db.session.commit()
     return jsonify({"record": record_to_dict(record)})
 
